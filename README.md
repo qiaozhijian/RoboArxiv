@@ -1,5 +1,5 @@
 <p align="center">
-<h1 align="center"> <img src="./imgs/icon/ai.png" width="30" />MyArxiv</h1>
+<h1 align="center"> <img src="./imgs/icon/ai.png" width="30" />RoboArxiv</h1>
 </p>
 
 
@@ -13,14 +13,14 @@
   <a >
        <img alt="PRs-Welcome" src="https://img.shields.io/badge/PRs-Welcome-red" />
   	</a>
-   	<a href="https://github.com/MLNLP-World/MyArxiv/stargazers">
-       <img alt="stars" src="https://img.shields.io/github/stars/MLNLP-World/MyArxiv" />
+   	<a href="https://github.com/qiaozhijian/RoboArxiv/stargazers">
+       <img alt="stars" src="https://img.shields.io/github/stars/qiaozhijian/RoboArxiv" />
   	</a>
-  	<a href="https://github.com/MLNLP-World/MyArxiv/network/members">
-       <img alt="FORK" src="https://img.shields.io/github/forks/MLNLP-World/MyArxiv?color=FF8000" />
+  	<a href="https://github.com/qiaozhijian/RoboArxiv/network/members">
+       <img alt="FORK" src="https://img.shields.io/github/forks/qiaozhijian/RoboArxiv?color=FF8000" />
   	</a>
-    <a href="https://github.com/MLNLP-World/MyArxiv/issues">
-      <img alt="Issues" src="https://img.shields.io/github/issues/MLNLP-World/MyArxiv?color=0088ff"/>
+    <a href="https://github.com/qiaozhijian/RoboArxiv/issues">
+      <img alt="Issues" src="https://img.shields.io/github/issues/qiaozhijian/RoboArxiv?color=0088ff"/>
     </a>
     <br />
 </p>
@@ -69,7 +69,7 @@
 
 ## <img src="./imgs/icon/resource.png" width="25" />项目预览
 
-使用者可以访问[https://mlnlp-world.github.io/MyArxiv/](https://mlnlp-world.github.io/MyArxiv/)进行对当前项目进行预览，以便更好地熟悉和使用当前项目。
+使用者可以访问[RoboArxiv](https://qiaozhijian.github.io/RoboArxiv/)进行对当前项目进行预览，以便更好地熟悉和使用当前项目。
 
 - `MyArxiv`总页面概览：
 
