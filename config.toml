@@ -1,5 +1,5 @@
 site_title = "RoboArxiv"
-limit_days = 7
+limit_days = 30
 cache_url = "https://qiaozhijian.github.io/RoboArxiv/cache.json"
 
 [[sources]]
