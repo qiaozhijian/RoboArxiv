@@ -1,11 +1,11 @@
-site_title = "MyArxiv"
+site_title = "RoboArxiv"
 limit_days = 7
-cache_url = "https://mlnlp-world.github.io/MyArxiv/cache.json"
+cache_url = "https://qiaozhijian.github.io/RoboArxiv/cache.json"
 
 [[sources]]
 limit = 150
-category = "cs.CL"
-title = "Computation and Language"
+category = "cs.RO"
+title = "Robotics"
 
 [[sources]]
 limit = 150
@@ -14,8 +14,8 @@ title = "Computer Vision and Pattern Recognition"
 
 [[sources]]
 limit = 150
-category = "cs.IR"
-title = "Information Retrieval"
+category = "cs.AI"
+title = "Artificial Intelligence"
 
 [[sources]]
 limit = 150
@@ -24,8 +24,8 @@ title = "Machine Learning"
 
 [[sources]]
 limit = 150
-category = "cs.MM"
-title = "Multimedia"
+category = "cs.GR"
+title = "Graphics"
 
 [scripts]
 highlight_title = "scripts/highlight_title.rhai"
