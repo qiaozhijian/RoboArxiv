@@ -1,12 +1,12 @@
 let titles_type = ["Dataset", "Survey", "Review", "Overview"];
-let titles_model = ["SLAM", "Odometry", "Registration", "Long-term", "Multi-session"];
-let titles_method = ["Certifiable", "Self-Supervised", "Learning", "Unsupervised"];
+let titles_model = ["SLAM", "Odometry", "Registration", "Long-term", "Multi-session", "Planning", "Optimization", "Estimation", "Control", "Swarm", "Detection", "Segmentation", "Life"];
+let titles_method = ["Certifiable", "Self-Supervised", "Unsupervised", "Fusion, "Navigation"];
 let titles =  titles_model + titles_method + titles_type;
 let authors_array = ["Shaojie Shen", "Luca Carlone", "Yoshua Bengio", "Frank Dellaert", "Wolfram Burgard", "Davide Scaramuzza", "Marc Pollefeys", "Andrew Davison", "Daniel Cremers"];
 
 let conferences = [
     // AI
-    "AAAI", "AAMAS", "ACM MM", "AISTATS", "ALT", "CEC", "ECAI", "FUZZ IEEE", "GECCO", "ICANN", "ICAPS", "ICCBR", "ICONIP", "ICRA", "ICTAI", "IJCAI", "IJCNN", "IROS", "KR", "KSEM", "SIGGRAPH", "STOC", "UAI", "PPSN", "PRICAI", "TAAI",
+    "AAAI", "AAMAS", "ACM MM", "AISTATS", "ALT", "CEC", "ECAI", "FUZZ IEEE", "GECCO", "ICANN", "ICAPS", "ICCBR", "ICONIP", "ICRA", "ICTAI", "IJCAI", "IJCNN", "IROS", "KR", "KSEM", "SIGGRAPH", "STOC", "UAI", "PPSN", "PRICAI", "TAAI", "RSS",
     // CV
     "3DV", "ACCV", "ACM MM", "BMVC", "CVPR", "ECCV", "ICCV", "ICDAR", "ICIP", "ICME", "ICPR", "IEEE VIS", "MICCAI", "SIGGRAPH", "WACV",
     // DM
