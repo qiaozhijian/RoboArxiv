@@ -3,27 +3,27 @@ limit_days = 30
 cache_url = "https://qiaozhijian.github.io/RoboArxiv/cache.json"
 
 [[sources]]
-limit = 150
+limit = 300
 category = "cs.RO"
 title = "Robotics"
 
 [[sources]]
-limit = 150
+limit = 300
 category = "cs.CV"
 title = "Computer Vision and Pattern Recognition"
 
 [[sources]]
-limit = 150
+limit = 300
 category = "cs.AI"
 title = "Artificial Intelligence"
 
 [[sources]]
-limit = 150
+limit = 300
 category = "cs.LG"
 title = "Machine Learning"
 
 [[sources]]
-limit = 150
+limit = 300
 category = "cs.GR"
 title = "Graphics"
 
