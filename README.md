@@ -1,6 +1,10 @@
 <p align="center">
-<h1 align="center"> <img src="./imgs/icon/ai.png" width="30" />**[RoboArxiv](https://qiaozhijian.github.io/RoboArxiv/)**</h1>
+<h1 align="center"> <img src="./imgs/icon/ai.png" width="30" />RoboArxiv</h1>
 </p>
+
+<div align="center">
+https://qiaozhijian.github.io/RoboArxiv/
+</div>
 
 
 <p align="center">
