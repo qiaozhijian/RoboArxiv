@@ -2,7 +2,7 @@ let titles_type = ["Dataset", "Survey", "Review", "Overview"];
 let titles_model = ["SLAM", "Odometry", "Registration", "Long-term", "Multi-session", "Planning", "Optimization", "Estimation", "Control", "Swarm", "Detection", "Segmentation", "Life", "estimator"];
 let titles_method = ["Certifiable", "Self-Supervised", "Semi-Supervised", "Unsupervised", "Fusion", "Navigation", "Detect", "Decision", "Calibration", "Reinforcement"];
 let titles =  titles_model + titles_method + titles_type;
-let authors_array = ["Shaojie Shen", "Luca Carlone", "Yoshua Bengio", "Frank Dellaert", "Wolfram Burgard", "Davide Scaramuzza", "Marc Pollefeys", "Andrew Davison", "Daniel Cremers"];
+let authors_array = ["Shaojie Shen", "Luca Carlone", "Yoshua Bengio", "Frank Dellaert", "Wolfram Burgard", "Davide Scaramuzza", "Marc Pollefeys", "Andrew Davison", "Daniel Cremers", "Heng Yang", "Fei Gao", "Tong Qin", "Wenchao Ding", "Fu Zhang"];
 
 let conferences = [
     // AI
