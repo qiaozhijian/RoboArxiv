@@ -7,26 +7,6 @@ limit = 300
 category = "cs.RO"
 title = "Robotics"
 
-[[sources]]
-limit = 300
-category = "cs.CV"
-title = "Computer Vision and Pattern Recognition"
-
-[[sources]]
-limit = 300
-category = "cs.AI"
-title = "Artificial Intelligence"
-
-[[sources]]
-limit = 300
-category = "cs.LG"
-title = "Machine Learning"
-
-[[sources]]
-limit = 300
-category = "cs.GR"
-title = "Graphics"
-
 [scripts]
 highlight_title = "scripts/highlight_title.rhai"
 highlight_author = "scripts/highlight_author.rhai"

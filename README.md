@@ -36,10 +36,6 @@ https://qiaozhijian.github.io/RoboArxiv/
 
 Arxiv is one of the most popular websites for academic paper preprints, and it receives a large number of new academic papers every day. The website curates the latest papers in the field of robotics, covering several topics, including:
 - Robotics[cs.RO]
-- Computer Vision and Pattern Recognition[cs.CV]
-- Artificial Intelligence[cs.AI]
-- Machine Learning[cs.LG]
-- Graphics[cs.GR]
 
 ## <img src="./imgs/icon/link.png" width="25" />Reference
 - [MyArxiv Template](https://github.com/MLNLP-World/MyArxiv)
