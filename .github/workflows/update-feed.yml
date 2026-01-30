@@ -17,7 +17,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: Cache ArxivFeed
+        id: cache-arxivfeed
+        uses: actions/cache@v3
+        with:
+          path: ./arxivfeed
+          key: ${{ runner.os }}-arxivfeed-v1
+
       - name: Download ArxivFeed
+        if: steps.cache-arxivfeed.outputs.cache-hit != 'true'
         env:
           GITHUB_PAT: ${{ github.token }}
           REPO: "NotCraft/ArxivFeed"

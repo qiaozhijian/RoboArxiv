@@ -1,34 +1,36 @@
-let titles_type = ["Dataset", "Survey", "Review", "Overview"];
-let titles_model = ["SLAM", "Odometry", "Registration", "Exploration", "Long-term", "mapping", "Multi-session", "Planning", "Optimization", "Estimation", "Control", "Swarm", "Detection", "Segmentation", "Life", "estimator"];
-let titles_method = ["Certifiable", "Self-Supervised", "Semi-Supervised", "Unsupervised", "Fusion", "Navigation", "Detect", "Decision", "Calibration", "Reinforcement", "Relocalization", "loop", "global", "outlier", 
-"localization", "dynamic", "sparsification", "graph", "clique", "HD map", "reconstruction", "robot", "nerf", "Guassian", "road", "robust", "city", "simulation", "simulator", "dataset", "Deformable", "closed-form", 
-"geometric", "benchmark", "evaluation", "prediction", "multi-view", "grasp", "field", "point cloud", "lidar", "trajectory", "trajectories", "cluster", "GPT", "LLM", "embodied", "lane"];
-let titles =  titles_model + titles_method + titles_type;
-let authors_array = ["Shaojie Shen", "Luca Carlone", "Yoshua Bengio", "Frank Dellaert", "Wolfram Burgard", "Davide Scaramuzza", "Marc Pollefeys", "Andrew Davison", "Daniel Cremers", "Heng Yang", "Fei Gao", 
-"Tong Qin", "Wenchao Ding", "Fu Zhang", "Hesheng Wang", "Huan Yin", "Peng Yin", "Yue Wang", "Hang Zhao", "Xieyuanli Chen", "Boyu Zhou", "Timothy D. Barfoot", "Marc Pollefeys", "Kasra Khosoussi",
-"Fang Bai", "kaiming he", "Kevin Doherty", "shoudong huang", "Guoquan Huang", "Yue Pan", "Timothy D. Barfoot", "Jonathan P. How", "Guofeng Zhang", "Cyrill Stachniss", "Javier Civera", "Yulun Tian", "Jose Luis Blanco Claraco",
-"sida peng"];
+/* --- DATA SECTION --- */
+let titles_type = ["Dataset", "Survey", "Review", "Overview", "World Model", "Video World Model", "Predictive World Model", "Foundation Model", "Benchmark"];
+let titles_model = ["SLAM", "Planning", "Diffusion", "Transformer", "Sora", "BEV", "Occupancy", "VLA", "Vision-Language-Action", "JEPA", "Dreamer", "Gaussian Splatting", "UniAD", "Video Generation"];
+let titles_method = ["End-to-End", "Self-Supervised", "Unsupervised", "Reinforcement", "Reinforcement Learning", "Imitation Learning", "Manipulation", "Dexterous", "Humanoid", "Sim-to-Real", "Real-to-Sim", 
+"embodied", "world model", "prediction", "trajectory", "motion planning", "control", "MPC", "decision making", "simulation", "simulator", "closed-loop", "interactive", "lane", "road", "urban", "scene", 
+"multi-modal", "zero-shot", "few-shot", "navigation", "grasp", "field", "nerf", "point cloud", "lidar", "radar", "sensor fusion", "calibration", "localization", "mapping"];
+
+let authors_array = [
+    "Shaojie Shen", "Luca Carlone", "Yoshua Bengio", "Frank Dellaert", "Wolfram Burgard", 
+    "Davide Scaramuzza", "Marc Pollefeys", "Andrew Davison", "Daniel Cremers", "Heng Yang", 
+    "Fei Gao", "Fu Zhang", "Yue Wang", "Hang Zhao", "Timothy D. Barfoot", "Kasra Khosoussi", 
+    "Kaiming He", "Shoudong Huang", "Guoquan Huang", "Jonathan P. How", 
+    "Guofeng Zhang", "Cyrill Stachniss", "Javier Civera", "Jose Luis Blanco Claraco", 
+    "Marco Pavone", "Sanja Fidler", "Yann LeCun", "Raquel Urtasun", 
+    "Sergey Levine", "Chelsea Finn", "Jitendra Malik", "Danijar Hafner", "David Ha", 
+    "Andreas Geiger", "Philipp Krähenbühl", "Abhinav Gupta", "Animesh Garg"
+];
 
 let conferences = [
-    // AI
-    "AAAI", "AAMAS", "ACM MM", "AISTATS", "CORL", "RAM", "RAS", "TIM", "RA-L", "RAL", "TITS", "TMECH", "TASE", "IJRR", "ICRA", "ICTAI", "IJCAI", "IJCNN", "IROS", "KR", "KSEM", "SIGGRAPH", "STOC", "UAI", "PPSN", "PRICAI", "RSS", "JFR", "TRO",
-    // CV
-    "3DV", "ACCV", "ACM MM", "BMVC", "CVPR", "ECCV", "ICCV", "ICDAR", "ICIP", "ICME", "ICPR", "IEEE VIS", "MICCAI", "SIGGRAPH", "WACV", "Transactions on Robotics", "International Journal of Robotics Research", "Robotics and Automation Letters",
-    // DM
-    "AKBC", "APWeb", "CIKM", "DASFAA", "ECML-PKDD", "ICDE", "ICDM", "ICDT", "KDD", "LREC", "MDM", "PAKDD", "PODS", "RecSys", "SDM", "SIGMOD", "VLDB", "WSDM", "WWW", "EDBT", "CIDR",
-    // IR
-    "ECIR", "ESWC", "ICMR", "ICTIR", "ISWC", "SIGIR",
-    // ML
-    "ACML", "AISTATS", "ECML", "ICLR", "ICML", "ML4H", "NeurIPS", "NIPS", "UAI",
-    // NLP
-    "AACL", "ACL", "CCL", "COLING", "COLT", "CoNLL", "EACL", "EMNLP", "ICASSP", "ICDAR", "ICONIP", "INTERSPEECH", "LREC", "NAACL", "NLPCC", "RepL4NLP", "SIGDIAL", "SemEval", "WANLP", "WASSA", "WOAH",
-    // Arch
-    "ASPLOS", "ATC", "DATE", "EuroSys", "FAST", "HPCA", "ISCA", "MICRO", "PPoPP", "SC", "SoCC",
-    // System
-    "FSE/ESEC", "ICSE", "ISSTA", "OSDI", "SOSP",
-    // Security
-    "ACSA", "AsiaCCS", "CCS", "DSN", "ESORICS", "EuroS&P", "ICICS", "NDSS", "RAID", "SP", "USENIX Security"
+    // Robotics & AD Top Tier
+    "ICRA", "IROS", "RSS", "CORL", "TRO", "IJRR", "JFR", "RA-L", "RAL", "RAM", "L4DC", "IV", "ITSC", "T-ITS", "TITS",
+    // AI & ML Top Tier
+    "NeurIPS", "NIPS", "ICLR", "ICML", "AAAI", "IJCAI", "AISTATS", "UAI",
+    // Computer Vision Top Tier
+    "CVPR", "ICCV", "ECCV", "3DV", "WACV", "BMVC",
+    // High Impact Journals
+    "Science Robotics", "Nature Machine Intelligence", "PAMI", "TIP", "T-RO",
+    // System & Control
+    "CDC", "ACC", "T-CST", "TMECH", "TASE", "RAS"
 ];
+
+/* --- LOGIC SECTION --- */
+let titles =  titles_model + titles_method + titles_type;
 
 let start = conferences.shift();
 let conferences_rg = conferences.reduce(|sum, v| sum + "|" + v, start);

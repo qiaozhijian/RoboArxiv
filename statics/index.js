@@ -11,6 +11,57 @@ document.onkeydown = function (e) {
 /* Switch Theme */
 const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
 
+/* In-page Search */
+const searchInput = document.getElementById('search-input');
+if (searchInput) {
+    searchInput.addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase();
+        const articles = document.querySelectorAll('.day-container article article'); // Individual papers
+        
+        articles.forEach(article => {
+            const title = article.querySelector('.article-expander-title').textContent.toLowerCase();
+            const authors = article.querySelector('.article-authors').textContent.toLowerCase();
+            const summary = article.querySelector('.article-summary-box-inner').textContent.toLowerCase();
+            
+            if (title.includes(query) || authors.includes(query) || summary.includes(query)) {
+                article.style.display = '';
+            } else {
+                article.style.display = 'none';
+            }
+        });
+
+        // Hide day containers if empty
+        document.querySelectorAll('.day-container').forEach(day => {
+            const visibleArticles = day.querySelectorAll('article article[style="display: \'\'' || article.style.display !== 'none']');
+            // Check if any child article is visible
+            let hasVisible = false;
+            day.querySelectorAll('article article').forEach(a => {
+                if (a.style.display !== 'none') hasVisible = true;
+            });
+            day.style.display = hasVisible ? '' : 'none';
+        });
+    });
+}
+
+/* Auto Detect Code Links */
+document.querySelectorAll('.article-summary-box-inner span').forEach(span => {
+    const text = span.textContent;
+    const githubMatch = text.match(/https?:\/\/github\.com\/[^\s)\]]+/);
+    if (githubMatch) {
+        const codeUrl = githubMatch[0];
+        const authorsDiv = span.closest('article').querySelector('.article-authors');
+        if (authorsDiv && !authorsDiv.querySelector('.code-link')) {
+            const codeLink = document.createElement('a');
+            codeLink.href = codeUrl;
+            codeLink.className = 'code-link';
+            codeLink.innerHTML = '<i class="ri-code-s-slash-line" title="Source Code"></i>';
+            codeLink.style.marginLeft = '10px';
+            codeLink.style.color = 'var(--nord0E)';
+            authorsDiv.insertBefore(codeLink, authorsDiv.firstChild);
+        }
+    }
+});
+
 function switchTheme(e) {
     if (e.target.checked) {
         document.documentElement.setAttribute('data-theme', 'light');

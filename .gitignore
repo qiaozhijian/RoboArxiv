@@ -6,6 +6,9 @@
 
 # NotFeed Files
 /target/
+arxivfeed
+arxivfeed.tgz
+asset.url
 
 # Logs
 logs

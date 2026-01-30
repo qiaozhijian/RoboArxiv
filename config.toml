@@ -7,6 +7,26 @@ limit = 300
 category = "cs.RO"
 title = "Robotics"
 
+[[sources]]
+limit = 100
+category = "(cat:cs.CV+OR+cat:cs.AI+OR+cat:cs.LG+OR+cat:cs.RO)+AND+(video+AND+world+AND+model)"
+title = "Video World Models"
+
+[[sources]]
+limit = 50
+category = "(cat:cs.RO+OR+cat:cs.AI)+AND+(embodied+OR+manipulation+OR+VLA+OR+dexterous)"
+title = "Embodied Intelligence"
+
+[[sources]]
+limit = 50
+category = "(cat:cs.CV+OR+cat:cs.RO)+AND+(end-to-end+OR+BEV+OR+occupancy+OR+planning+foundation)"
+title = "End-to-End AD"
+
+[[sources]]
+limit = 50
+category = "(cat:cs.RO+OR+cat:cs.AI+OR+cat:cs.LG)+AND+(foundation+model+OR+multimodal+OR+generalist+agent)"
+title = "Foundation Models"
+
 [scripts]
 highlight_title = "scripts/highlight_title.rhai"
 highlight_author = "scripts/highlight_author.rhai"

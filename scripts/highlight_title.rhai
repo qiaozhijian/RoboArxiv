@@ -5,8 +5,8 @@ let authors = params[1];
 
 title.trim();
 
-let title_rg = RegexCaseInsensitive(`(?P<key>(${cfg::title_rg}))`);
-let authors_rg = RegexCaseInsensitive(`(?P<key>(${cfg::authors_rg}))`);
+let title_rg = RegexCaseInsensitive(`(?P<key>\b(${cfg::title_rg})\b)`);
+let authors_rg = RegexCaseInsensitive(`(?P<key>\b(${cfg::authors_rg})\b)`);
 let title = title_rg.replace_all(title,"<span class=\"highlight-title\">$key</span>");
 
 let authors = authors.map(|v|authors_rg.is_match(v));
