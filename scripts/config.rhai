@@ -29,6 +29,8 @@ let conferences = [
     "CDC", "ACC", "T-CST", "TMECH", "TASE", "RAS"
 ];
 
+let top_labs = ["NVIDIA", "DeepMind", "OpenAI", "Google Research", "Stanford", "MIT", "Berkeley", "CMU", "ETH", "Oxford", "Meta AI", "Tesla"];
+
 /* --- LOGIC SECTION --- */
 let titles =  titles_model + titles_method + titles_type;
 
@@ -42,6 +44,10 @@ let title_rg = titles.reduce(|sum, v| sum + "|" + v, start);
 let start = authors_array.shift();
 let authors_rg = authors_array.reduce(|sum, v| sum + "|" + v, start);
 
+let start = top_labs.shift();
+let labs_rg = top_labs.reduce(|sum, v| sum + "|" + v, start);
+
 export title_rg;
 export authors_rg;
 export conferences_rg;
+export labs_rg;

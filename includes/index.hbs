@@ -59,6 +59,19 @@
 
         <div class="search-container">
             <input type="text" id="search-input" placeholder="搜索关键词、作者或标题..." />
+            <button id="featured-toggle" title="只看精选 (大牛/顶会)">
+                <i class="ri-magic-line"></i> 精选
+            </button>
+            <div id="featured-info-icon" title="什么是精选？">
+                <i class="ri-question-line"></i>
+            </div>
+        </div>
+
+        <div id="featured-legend" class="hidden">
+            <div class="legend-item"><span class="highlight-title">★★</span> 顶级作者 + 顶级机构</div>
+            <div class="legend-item"><span class="highlight-title">★</span> 顶级作者 或 顶级机构</div>
+            <div class="legend-item"><span class="chip" style="font-size: 80%">Conference</span> 已在顶会发表</div>
+            <div class="legend-close">&times;</div>
         </div>
 
         <div class=icons>
@@ -86,7 +99,7 @@
                             <article>
                                 <details class="article-expander">
                                     <summary class="article-expander-title">
-                                        {{#if (ne updated published)}}♻{{/if}} {{highlight_title title authors}} {{highlight_conference comment}}
+                                        {{#if (ne updated published)}}♻{{/if}} {{highlight_title title authors comment}} {{highlight_conference comment}}
                                     </summary>
                                     <div class="article-authors">
                                         <a href="{{id}}">

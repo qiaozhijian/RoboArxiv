@@ -13,33 +13,66 @@ const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"
 
 /* In-page Search */
 const searchInput = document.getElementById('search-input');
-if (searchInput) {
-    searchInput.addEventListener('input', function(e) {
-        const query = e.target.value.toLowerCase();
-        const articles = document.querySelectorAll('.day-container article article'); // Individual papers
-        
-        articles.forEach(article => {
-            const title = article.querySelector('.article-expander-title').textContent.toLowerCase();
-            const authors = article.querySelector('.article-authors').textContent.toLowerCase();
-            const summary = article.querySelector('.article-summary-box-inner').textContent.toLowerCase();
-            
-            if (title.includes(query) || authors.includes(query) || summary.includes(query)) {
-                article.style.display = '';
-            } else {
-                article.style.display = 'none';
-            }
-        });
+const featuredToggle = document.getElementById('featured-toggle');
+let isFeaturedOnly = false;
 
-        // Hide day containers if empty
-        document.querySelectorAll('.day-container').forEach(day => {
-            const visibleArticles = day.querySelectorAll('article article[style="display: \'\'' || article.style.display !== 'none']');
-            // Check if any child article is visible
-            let hasVisible = false;
-            day.querySelectorAll('article article').forEach(a => {
-                if (a.style.display !== 'none') hasVisible = true;
-            });
-            day.style.display = hasVisible ? '' : 'none';
+function filterArticles() {
+    const query = searchInput ? searchInput.value.toLowerCase() : "";
+    const articles = document.querySelectorAll('.day-container article article');
+    
+    articles.forEach(article => {
+        const titleText = article.querySelector('.article-expander-title').textContent;
+        const authors = article.querySelector('.article-authors').textContent.toLowerCase();
+        const summary = article.querySelector('.article-summary-box-inner').textContent.toLowerCase();
+        
+        const hasStar = titleText.includes('★');
+        const hasConference = article.querySelector('.chip') !== null;
+        const matchesSearch = titleText.toLowerCase().includes(query) || authors.includes(query) || summary.includes(query);
+        
+        let shouldShow = matchesSearch;
+        if (isFeaturedOnly) {
+            shouldShow = shouldShow && (hasStar || hasConference);
+        }
+        
+        article.style.display = shouldShow ? '' : 'none';
+    });
+
+    // Hide empty sections
+    document.querySelectorAll('.day-container').forEach(day => {
+        let hasVisible = false;
+        day.querySelectorAll('article article').forEach(a => {
+            if (a.style.display !== 'none') hasVisible = true;
         });
+        day.style.display = hasVisible ? '' : 'none';
+    });
+}
+
+if (searchInput) {
+    searchInput.addEventListener('input', filterArticles);
+}
+
+if (featuredToggle) {
+    featuredToggle.addEventListener('click', function() {
+        isFeaturedOnly = !isFeaturedOnly;
+        featuredToggle.classList.toggle('active');
+        filterArticles();
+    });
+}
+
+/* Featured Legend Logic */
+const infoIcon = document.getElementById('featured-info-icon');
+const legend = document.getElementById('featured-legend');
+const legendClose = document.querySelector('.legend-close');
+
+if (infoIcon && legend) {
+    infoIcon.addEventListener('click', function() {
+        legend.classList.toggle('hidden');
+    });
+}
+
+if (legendClose && legend) {
+    legendClose.addEventListener('click', function() {
+        legend.classList.add('hidden');
     });
 }
 

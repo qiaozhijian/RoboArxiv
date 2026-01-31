@@ -306,18 +306,19 @@ footer {
     border-radius: 4px;
 }
 
-/* Search Bar */
 .search-container {
+    display: flex;
+    align-items: center;
     flex-grow: 1;
     margin: 0 40px;
     padding-bottom: 16px;
-    max-width: 500px;
+    max-width: 600px;
 }
 
 #search-input {
-    width: 100%;
+    flex-grow: 1;
     padding: 10px 15px;
-    border-radius: 20px;
+    border-radius: 20px 0 0 20px;
     border: 1px solid var(--nord03);
     background-color: var(--day-container);
     color: var(--body-color);
@@ -326,8 +327,85 @@ footer {
     transition: border-color 0.3s;
 }
 
-#search-input:focus {
-    border-color: var(--nord08);
+#featured-toggle {
+    padding: 10px 15px;
+    border-radius: 0 20px 20px 0;
+    border: 1px solid var(--nord03);
+    border-left: none;
+    background-color: var(--nord02);
+    color: var(--nord04);
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.3s;
+}
+
+#featured-toggle.active {
+    background-color: var(--nord0E);
+    color: var(--nord00);
+    border-color: var(--nord0E);
+    font-weight: bold;
+}
+
+#featured-toggle:hover {
+    background-color: var(--nord03);
+}
+
+#featured-toggle.active:hover {
+    background-color: var(--nord0F);
+}
+
+/* Featured Legend */
+#featured-info-icon {
+    margin-left: 10px;
+    color: var(--nord03);
+    cursor: help;
+    font-size: 20px;
+    transition: color 0.3s;
+}
+
+#featured-info-icon:hover {
+    color: var(--nord08);
+}
+
+#featured-legend {
+    width: 90%;
+    max-width: 1200px;
+    margin: -10px auto 15px;
+    padding: 10px 20px;
+    background-color: var(--nord01);
+    border: 1px dashed var(--nord03);
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    font-size: 14px;
+    color: var(--nord04);
+}
+
+#featured-legend.hidden {
+    display: none;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-close {
+    position: absolute;
+    right: 10px;
+    top: 5px;
+    cursor: pointer;
+    font-size: 20px;
+    color: var(--nord03);
+}
+
+.legend-close:hover {
+    color: var(--nord0B);
 }
 
 .article-authors {
