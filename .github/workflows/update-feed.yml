@@ -3,55 +3,39 @@ name: Update
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [main]
   schedule:
-    # Adjust refresh schedule here. By default, it runs once per day.
-    # Syntax reference: https://docs.github.com/en/actions/reference/events-that-trigger-workflows#schedule
-    # Recommended tool: https://crontab.guru/
-    - cron: "0 0 * * *"
+    # Runs once per day at 00:30 UTC (slightly offset to reduce thundering herd)
+    - cron: "30 0 * * *"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Cache ArxivFeed
-        id: cache-arxivfeed
-        uses: actions/cache@v3
-        with:
-          path: ./arxivfeed
-          key: ${{ runner.os }}-arxivfeed-v1
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Download ArxivFeed
-        if: steps.cache-arxivfeed.outputs.cache-hit != 'true'
-        env:
-          GITHUB_PAT: ${{ github.token }}
-          REPO: "NotCraft/ArxivFeed"
-          VERSION: "latest"
-          MATCH: "arxivfeed-.+-x86_64-unknown-linux-musl.tar.gz$"
-          RENAME: "arxivfeed.tgz"
-        shell: bash
-        run: |
-          curl -sL --fail \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: Bearer ${GITHUB_PAT}" \
-              "https://api.github.com/repos/${REPO}/releases/${VERSION}" \
-              | jq -r ".assets | .[] | select(.name | test(\"${MATCH}\")) | .url" \
-              | tee asset.url
-          curl -sL --fail \
-            -H "Accept: application/octet-stream" \
-            -H "Authorization: Bearer ${GITHUB_PAT}" \
-              -o "${RENAME}" \
-              "$(cat asset.url)"
-          tar -zxvf arxivfeed.tgz --strip-components 1 $(tar tf arxivfeed.tgz | grep /arxivfeed)
-          chmod +x arxivfeed
-      - name: Build rss
-        run: ./arxivfeed
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.12"
+
+      - name: Run RoboArxiv builder
+        run: uv run scripts/build.py
+        # The script uses PEP 723 inline dependencies.
+        # uv automatically installs arxiv + tomli + httpx on first run.
+
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./target
           force_orphan: true
+          cname: ""   # set a custom domain here if you ever use one
