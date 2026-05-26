@@ -28,6 +28,7 @@ Output:
 
 from __future__ import annotations
 
+import html
 import json
 import sys
 import urllib.error
@@ -56,6 +57,11 @@ ARXIV_PAGE_SIZE = 100
 TARGET_DIR = Path("target")
 CACHE_FILE = TARGET_DIR / "cache.json"
 HTML_FILE = TARGET_DIR / "index.html"
+PAPERS_PREVIEW_COUNT = 5
+
+
+def esc(text: str) -> str:
+    return html.escape(str(text), quote=True)
 
 # =============================================================================
 # Data Model (exactly compatible with previous cache.json)
@@ -370,6 +376,33 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         .meta {
             font-size: 0.75rem;
         }
+
+        details > summary {
+            list-style: none;
+        }
+
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details > summary .chevron,
+        details > summary .day-chevron {
+            transition: transform 0.2s ease;
+        }
+
+        details[open] > summary .chevron,
+        details[open] > summary .day-chevron {
+            transform: rotate(180deg);
+        }
+
+        .day-section > summary,
+        .category-section > summary {
+            user-select: none;
+        }
+
+        .paper-item > summary:hover {
+            background: rgba(39, 39, 42, 0.5);
+        }
     </style>
 </head>
 <body class="bg-zinc-950 text-zinc-200">
@@ -434,6 +467,24 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     <span class="text-zinc-400">篇</span>
                 </div>
                 
+                <button onclick="collapseToLatestDay()"
+                        class="px-4 py-2 rounded-3xl border border-yellow-800/60 bg-yellow-900/20 hover:bg-yellow-900/40 text-yellow-400 transition-colors flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-calendar-day"></i>
+                    <span>仅最新一天</span>
+                </button>
+
+                <button onclick="expandAllSections()"
+                        class="px-4 py-2 rounded-3xl border border-zinc-800 hover:bg-zinc-900 text-zinc-400 hover:text-zinc-200 transition-colors flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-expand"></i>
+                    <span>全部展开</span>
+                </button>
+
+                <button onclick="collapseAllSections()"
+                        class="px-4 py-2 rounded-3xl border border-zinc-800 hover:bg-zinc-900 text-zinc-400 hover:text-zinc-200 transition-colors flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-compress"></i>
+                    <span>全部折叠</span>
+                </button>
+
                 <button onclick="clearFilters()"
                         class="px-4 py-2 rounded-3xl border border-zinc-800 hover:bg-zinc-900 text-zinc-400 hover:text-zinc-200 transition-colors flex items-center gap-2 text-sm">
                     <i class="fa-solid fa-times"></i>
@@ -571,7 +622,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     </footer>
 
     <script>
-        // Simple client-side filtering (no external deps)
         let activeCategories = new Set();
 
         function debounce(fn, delay) {
@@ -582,34 +632,98 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             };
         }
 
+        function setDetailsOpen(selector, open) {
+            document.querySelectorAll(selector).forEach(el => { el.open = open; });
+        }
+
+        function collapseToLatestDay() {
+            document.querySelectorAll('.day-section').forEach((day, idx) => {
+                day.open = idx === 0;
+                day.querySelectorAll('.category-section').forEach(cat => { cat.open = false; });
+                day.querySelectorAll('.extra-papers').forEach(extra => extra.classList.add('hidden'));
+                day.querySelectorAll('.show-more-btn').forEach(btn => resetShowMoreBtn(btn));
+            });
+        }
+
+        function expandAllSections() {
+            setDetailsOpen('.day-section', true);
+            setDetailsOpen('.category-section', true);
+            document.querySelectorAll('.extra-papers').forEach(extra => extra.classList.remove('hidden'));
+            document.querySelectorAll('.show-more-btn').forEach(btn => {
+                btn.classList.add('hidden');
+            });
+        }
+
+        function collapseAllSections() {
+            setDetailsOpen('.day-section', false);
+            setDetailsOpen('.category-section', false);
+            document.querySelectorAll('.paper-item').forEach(p => { p.open = false; });
+        }
+
+        function resetShowMoreBtn(btn) {
+            const hidden = btn.dataset.hidden;
+            if (!hidden || hidden === '0') {
+                btn.classList.add('hidden');
+                return;
+            }
+            btn.classList.remove('hidden');
+            btn.innerHTML = `显示其余 ${hidden} 篇 <i class="fa-solid fa-chevron-down ml-1"></i>`;
+        }
+
+        function toggleCategoryPapers(btn) {
+            const wrapper = btn.previousElementSibling;
+            if (!wrapper || !wrapper.classList.contains('extra-papers')) return;
+
+            const isHidden = wrapper.classList.contains('hidden');
+            if (isHidden) {
+                wrapper.classList.remove('hidden');
+                btn.innerHTML = `收起 <i class="fa-solid fa-chevron-up ml-1"></i>`;
+            } else {
+                wrapper.classList.add('hidden');
+                const hidden = btn.dataset.hidden;
+                btn.innerHTML = `显示其余 ${hidden} 篇 <i class="fa-solid fa-chevron-down ml-1"></i>`;
+            }
+        }
+
         function filterPapers() {
             const q = (document.getElementById('search-input').value || '').toLowerCase().trim();
-            const cards = document.querySelectorAll('.paper-card');
+            const hasSearch = q.length > 0;
             let visible = 0;
 
-            cards.forEach(card => {
-                const title = card.dataset.title || '';
-                const authors = card.dataset.authors || '';
-                const summary = card.dataset.summary || '';
-                
-                const matchesSearch = !q || title.includes(q) || authors.includes(q) || summary.includes(q);
-                
-                const categorySection = card.closest('[data-category]');
+            document.querySelectorAll('.paper-item').forEach(item => {
+                const title = item.dataset.title || '';
+                const authors = item.dataset.authors || '';
+                const summary = item.dataset.summary || '';
+                const matchesSearch = !hasSearch || title.includes(q) || authors.includes(q) || summary.includes(q);
+
+                const categorySection = item.closest('[data-category]');
                 const cat = categorySection ? categorySection.dataset.category : '';
                 const matchesCategory = activeCategories.size === 0 || activeCategories.has(cat);
 
                 const show = matchesSearch && matchesCategory;
-                card.style.display = show ? '' : 'none';
+                item.style.display = show ? '' : 'none';
                 if (show) visible++;
+
+                if (show && hasSearch) {
+                    item.closest('.day-section')?.setAttribute('open', '');
+                    item.closest('.category-section')?.setAttribute('open', '');
+                    const extra = item.closest('.extra-papers');
+                    if (extra) extra.classList.remove('hidden');
+                }
             });
 
-            // Hide empty day sections
-            document.querySelectorAll('section[data-day]').forEach(section => {
-                const hasVisible = section.querySelector('.paper-card[style*="display: none"]') !== section.querySelectorAll('.paper-card').length;
-                // simpler: check if any visible paper inside
-                const visiblePapers = section.querySelectorAll('.paper-card:not([style*="display: none"])').length;
+            document.querySelectorAll('.category-section').forEach(section => {
+                const visiblePapers = section.querySelectorAll('.paper-item:not([style*="display: none"])').length;
                 section.style.display = visiblePapers > 0 ? '' : 'none';
             });
+
+            document.querySelectorAll('.day-section').forEach(section => {
+                const visibleCategories = section.querySelectorAll('.category-section:not([style*="display: none"])').length;
+                section.style.display = visibleCategories > 0 ? '' : 'none';
+            });
+
+            const el = document.getElementById('total-papers');
+            if (el) el.textContent = visible.toLocaleString();
         }
 
         const filterDebounced = debounce(filterPapers, 120);
@@ -635,52 +749,39 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 b.classList.add('border-zinc-700');
             });
             document.getElementById('search-input').value = '';
-            filterPapers();
-        }
-
-        function toggleAbstract(el) {
-            el.classList.toggle('expanded');
-            if (el.classList.contains('expanded')) {
-                el.style.webkitLineClamp = 'unset';
-                el.style.display = 'block';
-            } else {
-                el.style.webkitLineClamp = '4';
-                el.style.display = '-webkit-box';
-            }
+            document.querySelectorAll('.paper-item').forEach(item => { item.style.display = ''; });
+            document.querySelectorAll('.category-section, .day-section').forEach(el => { el.style.display = ''; });
+            collapseToLatestDay();
+            const total = document.querySelectorAll('.paper-item').length;
+            const el = document.getElementById('total-papers');
+            if (el) el.textContent = total.toLocaleString();
         }
 
         async function copyToClipboard(text, btn) {
             try {
                 await navigator.clipboard.writeText(text);
                 const original = btn.innerHTML;
-                btn.innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i>';
+                btn.innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i> 已复制';
                 setTimeout(() => { btn.innerHTML = original; }, 1200);
             } catch (e) {
-                // fallback
                 prompt('请手动复制：', text);
             }
         }
 
-        // Initialize
         function init() {
             const searchInput = document.getElementById('search-input');
             searchInput.addEventListener('input', filterDebounced);
 
-            // Keyboard shortcut
             document.addEventListener('keydown', (e) => {
                 if (e.key === '/' && document.activeElement.tagName === 'BODY') {
                     e.preventDefault();
                     searchInput.focus();
                 }
+                if (e.key === 'Escape') clearFilters();
             });
 
-            // Initial count
-            const total = document.querySelectorAll('.paper-card').length;
-            const el = document.getElementById('total-papers');
-            if (el) el.textContent = total.toLocaleString();
-
-            // Make sure Tailwind script has run
-            console.log('%c[RoboArxiv] Modern build initialized', 'color:#3f3f46');
+            collapseToLatestDay();
+            console.log('%c[RoboArxiv] Collapsible UI initialized', 'color:#eab308');
         }
 
         window.addEventListener('DOMContentLoaded', init);
@@ -741,101 +842,127 @@ def render_html(cfg: Config, cache: Cache, build_time: str) -> str:
     return html
 
 
+def render_paper_card(paper: dict[str, Any]) -> str:
+    authors = ", ".join(paper["authors"])
+    updated_badge = ""
+    if paper["updated"] != paper["published"]:
+        updated_badge = '<span class="px-1.5">•</span><span class="text-amber-400">updated</span>'
+
+    comment_html = ""
+    if paper.get("comment"):
+        comment_html = (
+            f'<div class="text-xs text-zinc-500 bg-zinc-950 border border-zinc-800 rounded-2xl px-3 py-2">'
+            f'<span class="text-zinc-400">Comment:</span> {esc(paper["comment"])}</div>'
+        )
+
+    arxiv_short = paper["id"].split("/")[-1]
+    paper_id = esc(paper["id"])
+
+    return f"""
+    <details class="paper-item bg-zinc-900/80 border border-zinc-800 hover:border-zinc-700 rounded-2xl overflow-hidden"
+             data-title="{esc(paper['title'].lower())}"
+             data-authors="{esc(authors.lower())}"
+             data-summary="{esc(paper['summary'].lower())}">
+        <summary class="cursor-pointer px-4 py-3 select-none">
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                    <div class="paper-title font-medium text-zinc-100 leading-tight">{esc(paper['title'])}</div>
+                    <div class="text-xs text-zinc-500 mt-1 truncate">{esc(authors)}</div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0 text-zinc-500 pt-0.5">
+                    <span class="font-mono text-[10px] hidden sm:inline">{esc(arxiv_short)}</span>
+                    <i class="fa-solid fa-chevron-down chevron text-[10px]"></i>
+                </div>
+            </div>
+        </summary>
+        <div class="px-4 pb-4 border-t border-zinc-800/80 pt-3 space-y-3">
+            <div class="flex items-center gap-2 text-[11px] text-zinc-500 meta">
+                <span class="font-mono">arXiv:{esc(arxiv_short)}</span>
+                {updated_badge}
+                <span class="px-1.5">•</span>
+                <span>{esc(paper['published'].split('T')[0])}</span>
+            </div>
+            <div class="text-sm text-zinc-400 leading-relaxed">{esc(paper['summary'])}</div>
+            {comment_html}
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+                <a href="{paper_id}" target="_blank"
+                   class="px-3 py-1.5 text-xs rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300">
+                    <i class="fa-solid fa-up-right-from-square mr-1"></i> arXiv
+                </a>
+                <a href="{esc(paper['pdf_url'])}" target="_blank"
+                   class="px-3 py-1.5 text-xs rounded-xl bg-yellow-900/30 hover:bg-yellow-900/50 text-yellow-400">
+                    <i class="fa-solid fa-file-pdf mr-1"></i> PDF
+                </a>
+                <button type="button" onclick="copyToClipboard('{paper_id}', this)"
+                        class="px-3 py-1.5 text-xs rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-400">
+                    <i class="fa-solid fa-link mr-1"></i> 复制
+                </button>
+            </div>
+        </div>
+    </details>
+    """
+
+
 def build_main_content(days: list) -> str:
-    """Build the large repeating HTML sections for days + papers."""
+    """Build collapsible day/category sections with paper preview limits."""
     if not days:
         return '<div class="text-center py-20 text-zinc-400">暂无数据。可能是今天 arXiv 尚未更新，或网络请求受限。</div>'
 
-    parts = []
-    for day_iso, subjects in days:
+    parts: list[str] = []
+    for day_idx, (day_iso, subjects) in enumerate(days):
         day_str = day_iso.split("T")[0]
         total_in_day = sum(len(s["papers"]) for s in subjects)
+        day_open = " open" if day_idx == 0 else ""
 
         parts.append(f"""
-        <section class="mb-10" data-day="{day_iso}">
-            <div class="flex items-center gap-3 mb-4 px-1">
-                <div class="font-display text-xl font-semibold tracking-tight">{day_str}</div>
+        <details class="day-section mb-4 border border-zinc-800 rounded-3xl overflow-hidden bg-zinc-950/50"{day_open} data-day="{esc(day_iso)}">
+            <summary class="cursor-pointer px-5 py-4 bg-zinc-900 hover:bg-zinc-800/80 transition-colors flex items-center gap-3">
+                <i class="fa-solid fa-chevron-down day-chevron text-yellow-500 text-sm"></i>
+                <div class="font-display text-xl font-semibold tracking-tight">{esc(day_str)}</div>
                 <div class="text-xs px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-400 font-mono">{total_in_day} 篇</div>
-                <div class="flex-1 h-px bg-gradient-to-r from-zinc-800 to-transparent"></div>
-            </div>
+                <div class="flex-1"></div>
+                <span class="text-xs text-zinc-500 hidden sm:inline">点击展开/折叠</span>
+            </summary>
+            <div class="px-4 pb-4 pt-2 space-y-3">
         """)
 
         for subj in subjects:
+            papers = subj["papers"]
+            preview = papers[:PAPERS_PREVIEW_COUNT]
+            extra = papers[PAPERS_PREVIEW_COUNT:]
+            extra_count = len(extra)
+
             parts.append(f"""
-            <div class="mb-6" data-category="{subj['name']}">
-                <div class="flex items-center gap-2 mb-3 px-3">
-                    <div class="font-semibold text-yellow-400 text-sm tracking-wider uppercase">{subj['name']}</div>
-                    <div class="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">{len(subj['papers'])}</div>
-                </div>
-                <div class="space-y-2">
+            <details class="category-section border border-zinc-800/70 rounded-2xl overflow-hidden bg-zinc-900/30"
+                     data-category="{esc(subj['name'])}">
+                <summary class="cursor-pointer px-4 py-3 hover:bg-zinc-800/40 transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-chevron-down chevron text-yellow-500/80 text-xs"></i>
+                    <div class="font-semibold text-yellow-400 text-sm tracking-wider uppercase">{esc(subj['name'])}</div>
+                    <div class="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">{len(papers)}</div>
+                    <span class="text-[10px] text-zinc-600 ml-auto">默认显示 {min(len(papers), PAPERS_PREVIEW_COUNT)} 篇</span>
+                </summary>
+                <div class="px-3 pb-3 space-y-2">
             """)
 
-            for p in subj["papers"]:
-                authors = ", ".join(p["authors"])
-                updated_badge = ""
-                if p["updated"] != p["published"]:
-                    updated_badge = '<span class="px-1.5">•</span><span class="text-amber-400">updated</span>'
+            for paper in preview:
+                parts.append(render_paper_card(paper))
 
-                comment_html = ""
-                if p.get("comment"):
-                    comment_html = f'<div class="text-xs text-zinc-500 bg-zinc-950 border border-zinc-800 rounded-2xl px-3 py-2 mt-2"><span class="text-zinc-400">Comment:</span> {p["comment"]}</div>'
-
-                arxiv_short = p["id"].split("/")[-1]
-
+            if extra:
+                parts.append('<div class="extra-papers hidden space-y-2">')
+                for paper in extra:
+                    parts.append(render_paper_card(paper))
+                parts.append("</div>")
                 parts.append(f"""
-                    <div class="paper-card group bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-3xl px-5 py-4"
-                         data-title="{p['title'].lower()}"
-                         data-authors="{authors.lower()}"
-                         data-summary="{p['summary'].lower()}">
-                        
-                        <div class="flex flex-col gap-2">
-                            <div class="flex items-start justify-between gap-3">
-                                <a href="{p['id']}" target="_blank"
-                                   class="paper-title font-medium text-zinc-100 group-hover:text-yellow-300 transition-colors leading-tight">
-                                    {p['title']}
-                                </a>
-                                <div class="flex items-center gap-1 shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
-                                    <a href="{p['pdf_url']}" target="_blank"
-                                       class="p-2 hover:bg-zinc-800 rounded-2xl text-yellow-400 hover:text-yellow-300"
-                                       title="下载 PDF">
-                                        <i class="fa-solid fa-file-pdf fa-lg"></i>
-                                    </a>
-                                    <button onclick="copyToClipboard('{p['id']}', this)"
-                                            class="p-2 hover:bg-zinc-800 rounded-2xl text-zinc-400 hover:text-zinc-200"
-                                            title="复制 arXiv 链接">
-                                        <i class="fa-solid fa-link fa-lg"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="text-sm text-zinc-400">{authors}</div>
-
-                            <div class="flex items-center gap-2 text-[11px] text-zinc-500 meta">
-                                <span class="font-mono">arXiv:{arxiv_short}</span>
-                                {updated_badge}
-                                <span class="px-1.5">•</span>
-                                <span>{p['published'].split('T')[0]}</span>
-                            </div>
-
-                            <div class="mt-1">
-                                <div class="abstract text-sm text-zinc-400 leading-relaxed cursor-pointer select-none"
-                                     onclick="toggleAbstract(this)">
-                                    {p['summary']}
-                                </div>
-                                <div class="mt-1 text-[10px] text-yellow-600/70 hover:text-yellow-500 cursor-pointer"
-                                     onclick="toggleAbstract(this.previousElementSibling)">
-                                    点击展开 / 收起摘要
-                                </div>
-                            </div>
-
-                            {comment_html}
-                        </div>
-                    </div>
+                <button type="button" onclick="toggleCategoryPapers(this)"
+                        class="show-more-btn w-full mt-2 py-2.5 text-sm text-yellow-500 hover:text-yellow-400 hover:bg-yellow-900/10 border border-dashed border-zinc-700 rounded-2xl transition-colors"
+                        data-hidden="{extra_count}">
+                    显示其余 {extra_count} 篇 <i class="fa-solid fa-chevron-down ml-1"></i>
+                </button>
                 """)
 
-            parts.append("</div></div>")
+            parts.append("</div></details>")
 
-        parts.append("</section>")
+        parts.append("</div></details>")
 
     return "".join(parts)
 
