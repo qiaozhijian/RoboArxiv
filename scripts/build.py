@@ -111,7 +111,7 @@ class Source:
 @dataclass
 class Config:
     site_title: str = "RoboArxiv"
-    limit_days: int = 30
+    limit_days: int = 180
     cache_url: str | None = None
     sources: list[Source] = field(default_factory=list)
 
@@ -122,7 +122,7 @@ def load_config(path: Path = Path("config.toml")) -> Config:
 
     cfg = Config(
         site_title=raw.get("site_title", "RoboArxiv"),
-        limit_days=raw.get("limit_days", 30),
+        limit_days=raw.get("limit_days", 180),
         cache_url=raw.get("cache_url"),
     )
 
