@@ -22,7 +22,6 @@ Output:
 # requires-python = ">=3.11"
 # dependencies = [
 #   "arxiv>=2.1.3",
-#   "httpx>=0.27",
 #   "tomli>=2.0.1; python_version < '3.11'",
 # ]
 # ///
@@ -30,17 +29,20 @@ Output:
 from __future__ import annotations
 
 import json
-import os
 import sys
+import urllib.error
+import urllib.request
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
-from xml.etree import ElementTree as ET  # only for very defensive fallback
 
 import arxiv
-import httpx
-import tomli  # type: ignore  # only used on <3.11, harmless on 3.11+
+
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    import tomli as tomllib  # type: ignore[no-redef]
 
 # =============================================================================
 # Configuration & Constants
@@ -110,7 +112,7 @@ class Config:
 
 def load_config(path: Path = Path("config.toml")) -> Config:
     with path.open("rb") as f:
-        raw = tomli.load(f)
+        raw = tomllib.load(f)
 
     cfg = Config(
         site_title=raw.get("site_title", "RoboArxiv"),
@@ -135,11 +137,72 @@ def load_config(path: Path = Path("config.toml")) -> Config:
 
 def make_client() -> arxiv.Client:
     """Create a properly configured arXiv client following official best practices."""
-    return arxiv.Client(
+    client = arxiv.Client(
         page_size=ARXIV_PAGE_SIZE,
         delay_seconds=ARXIV_DELAY,
         num_retries=ARXIV_RETRIES,
     )
+    client._session.headers.update({"User-Agent": UA})
+    return client
+
+
+def build_search_query(category: str) -> str:
+    """Normalize config categories to valid arXiv API search queries."""
+    query = category.strip()
+    if any(token in query for token in ("(", " AND ", " OR ", "cat:", "+")):
+        return query
+    return f"cat:{query}"
+
+
+def paper_from_dict(data: dict[str, Any]) -> Paper:
+    return Paper(
+        id=data["id"],
+        updated=data["updated"],
+        published=data["published"],
+        title=data["title"],
+        summary=data["summary"],
+        authors=list(data["authors"]),
+        pdf_url=data["pdf_url"],
+        comment=data.get("comment"),
+    )
+
+
+def load_existing_cache(url: str | None, cutoff: datetime) -> Cache:
+    if not url:
+        return {}
+
+    print(f"[cache] Loading existing cache from {url}")
+    try:
+        request = urllib.request.Request(url, headers={"User-Agent": UA})
+        with urllib.request.urlopen(request, timeout=120) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as err:
+        print(f"[warn] Failed to load existing cache: {err}", file=sys.stderr)
+        return {}
+
+    cache: Cache = {}
+    for day_key, categories in payload.items():
+        day_dt = datetime.fromisoformat(day_key.replace("Z", "+00:00"))
+        if day_dt < cutoff:
+            continue
+
+        cache[day_key] = {}
+        for category, papers in categories.items():
+            cache[day_key][category] = [paper_from_dict(p) for p in papers]
+
+    print(f"[cache] Loaded {len(cache)} day buckets from remote cache")
+    return cache
+
+
+def merge_papers(cache: Cache, papers: list[Paper], category: str) -> None:
+    for paper in papers:
+        day_key = paper.updated.split("T")[0] + "T00:00:00Z"
+        cache.setdefault(day_key, {})
+        cache[day_key].setdefault(category, [])
+
+        existing_ids = {item.id for item in cache[day_key][category]}
+        if paper.id not in existing_ids:
+            cache[day_key][category].append(paper)
 
 
 def fetch_category(
@@ -157,7 +220,7 @@ def fetch_category(
     # The original config used both simple "cat:cs.RO" and complex boolean queries.
     # The arxiv.py library accepts them directly as the `query` string.
     search = arxiv.Search(
-        query=source.category,  # can be "cat:cs.RO" or "(cat:cs.CV+OR+... ) AND ..."
+        query=build_search_query(source.category),
         max_results=source.limit,
         sort_by=arxiv.SortCriterion.LastUpdatedDate,
         sort_order=arxiv.SortOrder.Descending,
@@ -208,23 +271,11 @@ def build_cache(cfg: Config) -> Cache:
     # Truncate cutoff to day boundary (same spirit as original)
     cutoff = cutoff.replace(hour=0, minute=0, second=0, microsecond=0)
 
-    raw: Cache = {}
+    raw = load_existing_cache(cfg.cache_url, cutoff)
 
     for source in cfg.sources:
         papers = fetch_category(client, source, cutoff)
-        for p in papers:
-            # Use the "updated" date as the bucket key (original behavior)
-            day_key = p.updated.split("T")[0] + "T00:00:00Z"
-
-            if day_key not in raw:
-                raw[day_key] = {}
-            if source.title not in raw[day_key]:
-                raw[day_key][source.title] = []
-
-            # de-dupe across overlapping sources (important for "Video World Models" etc.)
-            existing_ids = {x.id for x in raw[day_key][source.title]}
-            if p.id not in existing_ids:
-                raw[day_key][source.title].append(p)
+        merge_papers(raw, papers, source.title)
 
     # Sort papers inside each bucket by updated desc (already mostly sorted)
     for day in raw.values():

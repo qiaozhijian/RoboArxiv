@@ -29,8 +29,6 @@ jobs:
 
       - name: Run RoboArxiv builder
         run: uv run scripts/build.py
-        # The script uses PEP 723 inline dependencies.
-        # uv automatically installs arxiv + tomli + httpx on first run.
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
@@ -38,4 +36,3 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./target
           force_orphan: true
-          cname: ""   # set a custom domain here if you ever use one

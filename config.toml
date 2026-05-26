@@ -26,8 +26,3 @@ title = "End-to-End AD"
 limit = 50
 category = "(cat:cs.RO+OR+cat:cs.AI+OR+cat:cs.LG)+AND+(foundation+model+OR+multimodal+OR+generalist+agent)"
 title = "Foundation Models"
-
-[scripts]
-highlight_title = "scripts/highlight_title.rhai"
-highlight_author = "scripts/highlight_author.rhai"
-highlight_conference = "scripts/highlight_conference.rhai"
